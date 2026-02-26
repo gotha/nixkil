@@ -10,6 +10,27 @@ This project provides AI agent capabilities for working with:
 - **Nix Package Manager** - Reproducible, declarative package management
 - **NixOS** - Linux distribution built on Nix principles
 
+## Installation
+
+You can use [npx skills](https://www.npmjs.com/package/skills)
+
+```sh
+npx skills add gotha/nixkil
+```
+
+or you can clone as a git submodule in your project:
+
+```bash
+# Add as submodule
+git submodule add https://github.com/gotha/nixkil.git .skills/nixkil
+
+# Initialize submodules (for cloning existing projects)
+git submodule update --init --recursive
+```
+
+Then configure your AI assistant to use the skill from `.skills/nixkil` or symlink in `.augment/skills` (for example).
+
+
 
 ## Development
 
