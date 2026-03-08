@@ -35,18 +35,24 @@ devenv has built-in support for many languages:
   languages.python = {
     enable = true;
     version = "3.11";
-    
-    # Use poetry for dependency management
-    poetry = {
+
+    # Use uv for fast dependency management (recommended)
+    uv = {
       enable = true;
-      activate.enable = true;
+      sync.enable = true;  # Auto-sync dependencies on shell entry
     };
-    
-    # Or use pip with venv
-    venv = {
-      enable = true;
-      requirements = ./requirements.txt;
-    };
+
+    # Alternative: Use poetry for dependency management
+    # poetry = {
+    #   enable = true;
+    #   activate.enable = true;
+    # };
+
+    # Alternative: Use pip with venv
+    # venv = {
+    #   enable = true;
+    #   requirements = ./requirements.txt;
+    # };
   };
 }
 ```
@@ -200,10 +206,12 @@ devenv up
     # General
     prettier.enable = true;
     
-    # Python
-    black.enable = true;
-    ruff.enable = true;
-    mypy.enable = true;
+    # Python (recommended defaults)
+    ruff.enable = true;     # Fast linting (replaces flake8, isort)
+    black.enable = true;    # Code formatting
+    mypy.enable = true;     # Type checking
+    # Note: vulture is not available as a pre-commit hook in devenv
+    # Run manually with: vulture .
     
     # JavaScript
     eslint.enable = true;

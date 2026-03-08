@@ -109,15 +109,17 @@ devShells.default = pkgs.mkShell {
 devShells.default = pkgs.mkShell {
   packages = [
     pkgs.python311
-    pkgs.python311Packages.pip
-    pkgs.python311Packages.virtualenv
-    pkgs.pyright  # LSP
-    pkgs.ruff     # Linter
+    pkgs.uv        # Fast package installer and resolver
+    pkgs.ruff      # Fast linting (replaces flake8, isort)
+    pkgs.black     # Code formatting
+    pkgs.mypy      # Type checking
+    pkgs.vulture   # Dead code detection
+    pkgs.pyright   # LSP
   ];
-  
+
   shellHook = ''
     if [ ! -d .venv ]; then
-      python -m venv .venv
+      uv venv .venv
     fi
     source .venv/bin/activate
   '';

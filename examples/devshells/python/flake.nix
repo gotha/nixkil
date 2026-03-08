@@ -25,13 +25,16 @@
           packages = with pkgs; [
             # Python
             python
-            python.pkgs.pip
-            python.pkgs.virtualenv
+            uv # Fast package installer and resolver (replaces pip, virtualenv)
 
-            # Development tools
-            ruff # Fast linter and formatter
+            # Code quality tools
+            ruff # Fast linting (replaces flake8, isort)
+            black # Code formatting
+            mypy # Type checking
+            vulture # Dead code detection
+
+            # Language server
             pyright # Type checker / Language server
-            black # Code formatter (alternative to ruff format)
 
             # Build dependencies (for packages with C extensions)
             gcc
@@ -51,30 +54,34 @@
             echo "🐍 Python development environment"
             echo "   Python version: $(python --version)"
             echo ""
-            
+
             # Create venv if it doesn't exist
             if [ ! -d .venv ]; then
               echo "Creating virtual environment..."
-              python -m venv .venv
+              uv venv .venv
             fi
-            
+
             # Activate venv
             source .venv/bin/activate
-            
+
             echo "Virtual environment activated: .venv"
             echo ""
             echo "Available tools:"
             echo "  python   - Python interpreter"
-            echo "  pip      - Package installer"
-            echo "  ruff     - Linter and formatter"
-            echo "  pyright  - Type checker"
-            echo "  black    - Code formatter"
+            echo "  uv       - Fast package installer"
+            echo "  ruff     - Fast linting (replaces flake8, isort)"
+            echo "  black    - Code formatting"
+            echo "  mypy     - Type checking"
+            echo "  vulture  - Dead code detection"
+            echo "  pyright  - Language server"
             echo ""
             echo "Quick start:"
-            echo "  pip install -r requirements.txt  # Install dependencies"
-            echo "  ruff check .                     # Lint code"
-            echo "  ruff format .                    # Format code"
-            echo "  pyright                          # Type check"
+            echo "  uv pip install -r requirements.txt  # Install dependencies"
+            echo "  uv add <package>                    # Add a dependency"
+            echo "  ruff check .                        # Lint code"
+            echo "  black .                             # Format code"
+            echo "  mypy .                              # Type check"
+            echo "  vulture .                           # Find dead code"
           '';
         };
 

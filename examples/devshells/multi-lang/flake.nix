@@ -31,9 +31,12 @@
 
               # Python
               python311
-              python311Packages.pip
-              ruff
-              pyright
+              uv       # Fast package installer and resolver
+              ruff     # Fast linting (replaces flake8, isort)
+              black    # Code formatting
+              mypy     # Type checking
+              vulture  # Dead code detection
+              pyright  # LSP
 
               # Node.js
               nodejs_20
@@ -79,10 +82,18 @@
 
           python = pkgs.mkShell {
             name = "python-only";
-            packages = with pkgs; [ python311 python311Packages.pip ruff pyright ];
+            packages = with pkgs; [
+              python311
+              uv       # Fast package installer and resolver
+              ruff     # Fast linting (replaces flake8, isort)
+              black    # Code formatting
+              mypy     # Type checking
+              vulture  # Dead code detection
+              pyright  # LSP
+            ];
             shellHook = ''
               echo "🐍 Python development environment"
-              if [ ! -d .venv ]; then python -m venv .venv; fi
+              if [ ! -d .venv ]; then uv venv .venv; fi
               source .venv/bin/activate
             '';
           };
