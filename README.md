@@ -12,13 +12,17 @@ This project provides AI agent capabilities for working with:
 
 ## Installation
 
-You can use [npx skills](https://www.npmjs.com/package/skills)
+### Using npx skills (Recommended)
 
-```sh
+The easiest way to install is using [npx skills](https://www.npmjs.com/package/skills):
+
+```bash
 npx skills add gotha/nixkil
 ```
 
-or you can clone as a git submodule in your project:
+### Using git submodule
+
+Alternatively, clone as a git submodule in your project:
 
 ```bash
 # Add as submodule
@@ -28,7 +32,29 @@ git submodule add https://github.com/gotha/nixkil.git .skills/nixkil
 git submodule update --init --recursive
 ```
 
-Then configure your AI assistant to use the skill from `.skills/nixkil` or symlink in `.augment/skills` (for example).
+Then configure your AI assistant to use the skill from `.skills/nixkil`.
+
+## Updating
+
+### If installed via npx skills
+
+```bash
+npx skills update gotha/nixkil
+```
+
+### If installed via git submodule
+
+```bash
+# Navigate to your project root
+cd /path/to/your/project
+
+# Update the submodule to latest
+git submodule update --remote .skills/nixkil
+
+# Commit the update
+git add .skills/nixkil
+git commit -m "Update nixkil skill to latest version"
+```
 
 
 
