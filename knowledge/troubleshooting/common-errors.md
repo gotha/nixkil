@@ -233,6 +233,169 @@ nix path-info -rsSh .#package
 nix-store --verify --check-contents --repair
 ```
 
+## Dynamically Linked Binaries
+
+### "No such file or directory" or "Exec format error"
+
+```
+./my-binary: No such file or directory
+```
+
+or
+
+```
+./my-binary: cannot execute: required file not found
+```
+
+**Cause:** Pre-compiled binaries expect the dynamic linker at `/lib64/ld-linux-x86-64.so.2` or similar paths that don't exist on NixOS. This happens with:
+- Downloaded binaries (VSCode extensions, language servers, etc.)
+- Proprietary software
+- Binaries from Docker images or other Linux distros
+
+### Solution 1: nix-ld (Recommended First Approach)
+
+[nix-ld](https://github.com/nix-community/nix-ld) provides a compatibility shim that makes most dynamically linked binaries work automatically.
+
+**Enable in NixOS configuration:**
+
+```nix
+# configuration.nix or in your NixOS module
+{ config, pkgs, ... }:
+{
+  programs.nix-ld.enable = true;
+
+  # Optional: Add common libraries that binaries might need
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc.lib
+    zlib
+    openssl
+    curl
+    glib
+    # Add more as needed based on what binaries require
+  ];
+}
+```
+
+**Rebuild and try the binary:**
+
+```bash
+sudo nixos-rebuild switch
+./my-binary  # Should work now
+```
+
+**Finding missing libraries:**
+
+```bash
+# Check what libraries a binary needs
+ldd ./my-binary
+
+# Find which Nix package provides a library
+nix-locate libssl.so.1.1 | head
+```
+
+### Solution 2: buildFHSEnv (Fallback)
+
+If nix-ld doesn't work (complex binaries, hardcoded paths, etc.), use [buildFHSEnv](https://ryantm.github.io/nixpkgs/builders/special/fhs-environments/) to create a FHS-compliant environment.
+
+**For running a binary:**
+
+```nix
+# shell.nix or in a flake devShell
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  fhsEnv = pkgs.buildFHSEnv {
+    name = "my-binary-env";
+    targetPkgs = pkgs: with pkgs; [
+      # Common libraries
+      stdenv.cc.cc.lib
+      zlib
+      glib
+      # Add libraries your binary needs
+      openssl
+      curl
+      xorg.libX11
+      xorg.libXcursor
+    ];
+    runScript = "bash";
+  };
+in
+fhsEnv
+```
+
+**Run with:**
+
+```bash
+nix-shell
+# Now inside FHS environment
+./my-binary
+```
+
+**For a specific binary wrapper:**
+
+```nix
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.buildFHSEnv {
+  name = "my-wrapped-binary";
+  targetPkgs = pkgs: with pkgs; [
+    stdenv.cc.cc.lib
+    zlib
+    openssl
+  ];
+  runScript = "/path/to/my-binary";
+}
+```
+
+**In a flake:**
+
+```nix
+{
+  outputs = { self, nixpkgs }: {
+    packages.x86_64-linux.my-binary =
+      let pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      in pkgs.buildFHSEnv {
+        name = "my-binary";
+        targetPkgs = pkgs: with pkgs; [
+          stdenv.cc.cc.lib
+          zlib
+        ];
+        runScript = "${./my-binary}";
+      };
+  };
+}
+```
+
+### When to Use Which
+
+| Scenario | Recommended Solution |
+|----------|---------------------|
+| Simple binaries, VSCode extensions | nix-ld |
+| Most downloaded CLI tools | nix-ld |
+| Complex GUI applications | buildFHSEnv |
+| Binaries with hardcoded `/usr` paths | buildFHSEnv |
+| Steam, proprietary games | buildFHSEnv (or steam-run) |
+| nix-ld doesn't work | buildFHSEnv |
+
+### Debugging Library Issues
+
+```bash
+# See what dynamic linker a binary expects
+file ./my-binary
+
+# List required libraries
+ldd ./my-binary
+
+# Check for missing libraries (shows "not found")
+ldd ./my-binary | grep "not found"
+
+# Find package providing a library
+nix-locate --top-level libfoo.so
+
+# Trace library loading
+LD_DEBUG=libs ./my-binary 2>&1 | head -50
+```
+
 ## Common Pitfalls
 
 ### Using <nixpkgs> (impure)
