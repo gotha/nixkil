@@ -1,2 +1,0 @@
-"""Nixkil test suite."""
-

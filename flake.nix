@@ -6,16 +6,12 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-      in
-      let
-        pythonEnv = pkgs.python311.withPackages (ps: [
-          ps.pytest
-          ps.pytest-cov
-        ]);
       in
       {
         devShells.default = pkgs.mkShell {
@@ -32,9 +28,6 @@
             # Development tools
             direnv
             nix-direnv
-
-            # Python for tools and testing
-            pythonEnv
           ];
 
           shellHook = ''
@@ -44,16 +37,7 @@
           '';
         };
 
-        apps.test = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "run-tests" ''
-            cd ${self}
-            ${pythonEnv}/bin/python -m pytest tests/ -v --ignore=tests/test_examples.py -p no:cacheprovider "$@"
-          '');
-        };
-
         formatter = pkgs.nixfmt-rfc-style;
       }
     );
 }
-

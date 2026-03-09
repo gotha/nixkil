@@ -7,42 +7,96 @@ description: Agent skill for Nix language programming, Nix package manager, and 
 
 Agent skill for Nix language programming, Nix package manager, and NixOS.
 
-## Tools
+## CLI Commands
+
+This skill provides knowledge and guidance for working with Nix. Use the standard Nix CLI tools directly via shell commands.
 
 ### Package Management
-| Tool | Description |
-|------|-------------|
-| `nix_search` | Search for packages in nixpkgs |
-| `nix_package_info` | Get detailed package metadata |
-| `nix_run` | Run a package without installing |
-| `nix_shell` | Enter a shell with packages available |
-| `nix_build` | Build a package or derivation |
+
+```bash
+# Search for packages
+nix search nixpkgs <query>
+nix search nixpkgs python --json  # JSON output for parsing
+
+# Get package info
+nix eval nixpkgs#<package>.meta --json
+
+# Run a package without installing
+nix run nixpkgs#<package> -- [args]
+
+# Enter a shell with packages
+nix shell nixpkgs#pkg1 nixpkgs#pkg2
+
+# Build a package
+nix build nixpkgs#<package>
+```
 
 ### Flake Operations
-| Tool | Description |
-|------|-------------|
-| `flake_init` | Initialize a new flake project |
-| `flake_show` | Show flake outputs |
-| `flake_check` | Validate a flake |
-| `flake_update` | Update flake inputs |
-| `flake_lock_info` | Show lock file information |
+
+```bash
+# Initialize a new flake
+nix flake init
+nix flake init --template templates#<name>
+
+# Show flake outputs
+nix flake show [flake-ref]
+nix flake show --json  # JSON output
+
+# Check/validate a flake
+nix flake check [flake-ref]
+
+# Update flake inputs
+nix flake update [flake-ref]
+nix flake update <input-name> [flake-ref]  # Update specific input
+
+# Show lock file info
+nix flake metadata [flake-ref]
+```
 
 ### NixOS Configuration
-| Tool | Description |
-|------|-------------|
-| `nixos_option_search` | Search NixOS options |
-| `nixos_option_info` | Get option details and documentation |
-| `nixos_rebuild` | Rebuild NixOS system configuration |
-| `nixos_generations` | List system generations |
 
-### Language Analysis
-| Tool | Description |
-|------|-------------|
-| `nix_eval` | Evaluate Nix expressions |
-| `nix_fmt` | Format Nix files |
-| `nix_lint` | Lint Nix files for issues |
-| `nix_repl_eval` | Evaluate in REPL context |
-| `nix_parse` | Parse and validate Nix syntax |
+```bash
+# Search NixOS options (use nixos.org/options or)
+nix eval --expr 'builtins.attrNames (import <nixpkgs/nixos> {}).options'
+
+# Rebuild system (requires sudo)
+sudo nixos-rebuild switch
+sudo nixos-rebuild switch --flake .#hostname
+sudo nixos-rebuild test  # Test without making it default
+sudo nixos-rebuild boot  # Activate on next boot
+
+# List generations
+nix-env --list-generations -p /nix/var/nix/profiles/system
+```
+
+### Language Tools
+
+```bash
+# Evaluate Nix expressions
+nix eval --expr '1 + 1'
+nix eval --file ./file.nix
+nix eval .#someOutput --json
+
+# Format Nix files (nixfmt or alejandra)
+nix fmt  # Uses formatter from flake
+nixfmt file.nix
+alejandra file.nix
+
+# Lint Nix files
+statix check .
+deadnix .
+
+# Parse/validate syntax
+nix-instantiate --parse file.nix
+```
+
+### Useful Flags
+
+- `--json` - Output as JSON for parsing
+- `--verbose` / `-v` - Show more details
+- `--dry-run` - Show what would be done
+- `--show-trace` - Show full error traces
+- `--impure` - Allow impure evaluation (env vars, etc.)
 
 ## Knowledge Areas
 
